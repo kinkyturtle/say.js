@@ -1,12 +1,13 @@
 {
-  "name": "say",
-  "description": "TTS (Text To Speech) Module for Node.js",
+  "name": "syncsay",
+  "description": "Synchronized TTS (Text To Speech) Module for Node.js",
   "version": "0.11.0",
   "author": "Marak Squires",
+  "modified_by": "kinkyturtle",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "http://github.com/Marak/say.js.git"
+    "url": "http://github.com/kinkyturtle/syncsay.js.git"
   },
   "engines": {
     "node": ">=0.10.0"
