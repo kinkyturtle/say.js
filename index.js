@@ -60,8 +60,14 @@ say.speak = function(text, voice, speed, callback) {
 
     pipedData += '(SayText \"' + text + '\")';
   } else if (process.platform === 'win32') {
-    pipedData = text;
-    commands = [ 'Add-Type -AssemblyName System.speech; $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; $speak.Speak([Console]::In.ReadToEnd())' ];
+
+    let command = `powershell \
+                   Add-Type -AssemblyName System.speech; \
+                   $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; \
+                   $speak.Speak( '${text}' )`;
+
+    child_process.spawnSync( command, [], { shell: true } );
+
   } else {
     // if we don't support the platform, callback with an error (next tick) - don't continue
     return process.nextTick(function() {
@@ -69,30 +75,34 @@ say.speak = function(text, voice, speed, callback) {
     });
   }
 
-  var options = (process.platform === 'win32') ? { shell: true } : undefined;
-  childD = child_process.spawn(say.speaker, commands, options);
+  // async spawning for linux and mac for now
+  if (process.platform !== 'win32') {
 
-  childD.stdin.setEncoding('ascii');
-  childD.stderr.setEncoding('ascii');
+    childD = child_process.spawn(say.speaker, commands);
 
-  if (pipedData) {
-    childD.stdin.end(pipedData);
-  }
+    childD.stdin.setEncoding('ascii');
+    childD.stderr.setEncoding('ascii');
 
-  childD.stderr.once('data', function(data) {
-    // we can't stop execution from this function
-    callback(new Error(data));
-  });
-
-  childD.addListener('exit', function (code, signal) {
-    if (code === null || signal !== null) {
-      return callback(new Error('say.js: could not talk, had an error [code: ' + code + '] [signal: ' + signal + ']'));
+    if (pipedData) {
+      childD.stdin.end(pipedData);
     }
 
-    childD = null;
+    childD.stderr.once('data', function(data) {
+      // we can't stop execution from this function
+      callback(new Error(data));
+    });
 
-    callback(null);
-  });
+    childD.addListener('exit', function (code, signal) {
+      if (code === null || signal !== null) {
+        return callback(new Error('say.js: could not talk, had an error [code: ' + code + '] [signal: ' + signal + ']'));
+      }
+
+      childD = null;
+
+      callback(null);
+    });
+  }
+
 };
 
 say.export = function(text, voice, speed, filename, callback) {
