@@ -64,7 +64,7 @@ say.speak = function(text, voice, speed, callback) {
     let command = `powershell \
                    Add-Type -AssemblyName System.speech; \
                    $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; \
-                   $speak.Speak( '${text}' )`;
+                   $speak.Speak("""${text}""")`; // triple powershell quotes here let the speaker speak read weird symbols
 
     child_process.spawnSync( command, [], { shell: true } );
 
