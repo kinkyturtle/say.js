@@ -61,10 +61,12 @@ say.speak = function(text, voice, speed, callback) {
     pipedData += '(SayText \"' + text + '\")';
   } else if (process.platform === 'win32') {
 
+    let voiceCommand = voice ? `$speak.SelectVoice('Microsoft Zira Desktop');` : '';
+
     let command = `powershell \
                    Add-Type -AssemblyName System.speech; \
                    $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; \
-                   $speak.Speak("""${text}""")`; // triple powershell quotes here let the speaker speak read weird symbols
+                   ${voiceCommand} $speak.Speak("""${text}""")`; // triple powershell quotes here let the speaker speak read weird symbols
 
     child_process.spawnSync( command, [], { shell: true } );
 
